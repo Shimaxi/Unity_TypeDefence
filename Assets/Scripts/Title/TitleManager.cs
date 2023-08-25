@@ -1,33 +1,45 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Audio;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 public class TitleManager : MonoBehaviour
 {
+    // 初回起動時にウォームアップを行う
     public GameObject _warmUp;
+    public Text _warmUpText;
     public Text _warmUpSpell;
-    public AudioSource _audioSource;
-    public AudioClip _magicChargeSound;
-    public AudioClip _explosionSound;
-    public AudioClip _decideSound;
     public Outline _spellOutline;
+    public static bool s_isWarmUpDone;
 
+    
+
+    //フェードイン演出
     public Fade _fade;
 
+    //オーディオソースSEとBGM
+    public AudioSource _se;
+    public AudioSource _se2;
     public AudioSource _bgm;
+    public AudioMixer _audioMixer;
 
-    public Button _stg1Btn;
+    //音量設定
+    public GameObject _optionPanel;
 
-    public static bool s_isWarmUp;
+    [Header("以下タイトル画面で用いる音のデータ")]
+    public AudioClip _magicChargeSE;
+    public AudioClip _decideSE;
+    public AudioClip _explosionSE;
 
-    public Text _warmUpText;
+    private int _seNum = 0;
 
     // Start is called before the first frame update
     void Start()
     {
-        if(s_isWarmUp == true)
+        //起動時に一度だけ
+        if(s_isWarmUpDone == true)
         {
             _warmUp.SetActive(false);
             _fade.gameObject.SetActive(false);
@@ -37,23 +49,48 @@ public class TitleManager : MonoBehaviour
         if (_warmUp != null && _warmUp.activeSelf == true)
         {
             _warmUp.SetActive(true);
-            WarmUp();
-            s_isWarmUp = true;
+            StartCoroutine("WarmUpSpell");
+            s_isWarmUpDone = true;
         }
     }
-
-    void WarmUp()
+    public void SetBGM(float volume)
     {
-        _warmUpSpell.text = "";
-        StartCoroutine("WarmUpSpell");
-        _warmUpText.text = "適当にキーボードをガチャガチャして！";
+        _audioMixer.SetFloat("BGMVol", volume);
     }
 
+    public void SetSE(float volume)
+    {
+        _audioMixer.SetFloat("SEVol", volume);
+    }
+
+    public void TrySEBtn()
+    {
+        if (_seNum == 0)
+        {
+            _se.PlayOneShot(_decideSE);
+            _seNum++;
+        } else if(_seNum == 1)
+        {
+            _se.PlayOneShot(_magicChargeSE);
+            _seNum++;
+        } else if(_seNum == 2)
+        {
+            _se.PlayOneShot(_explosionSE);
+            _seNum = 0;
+        }
+        
+    }
+
+    public void OnClickOptionBtn()
+    {
+        _optionPanel.SetActive(true);
+    }
 
     IEnumerator Title()
     {
         yield return new WaitForSeconds(0.5f);
         _fade.FadeOut(2f);
+
         _bgm.Play();
     }
 
@@ -63,16 +100,16 @@ public class TitleManager : MonoBehaviour
     }
     public IEnumerator Onclickstg1BtnCor()
     {
-        _audioSource.volume = 1f;
-        _audioSource.PlayOneShot(_decideSound);
+        _se.PlayOneShot(_decideSE);
         yield return new WaitForSeconds(0.5f);
         SceneManager.LoadScene("Main");
     }
 
     IEnumerator WarmUpSpell()
     {
+        _warmUpSpell.text = "";
         int spellLength = 0;
-        
+        _warmUpText.text = "適当にキーボードをガチャガチャして！";
 
         bool isWarmUpEnd = false;
 
@@ -80,10 +117,9 @@ public class TitleManager : MonoBehaviour
         {
             if (Input.GetKeyDown(KeyCode.Return))
             {
-                Debug.Log("ウォームアップ終了！");
-                _audioSource.pitch = 1.0f;
-                _audioSource.volume = 0.2f;
-                _audioSource.PlayOneShot(_explosionSound);
+
+                //_se.volume = 0.2f;
+                _se.PlayOneShot(_explosionSE);
                 isWarmUpEnd = true;
                 StartCoroutine("Title");
                 Destroy(_warmUp.gameObject);
@@ -114,28 +150,28 @@ public class TitleManager : MonoBehaviour
                 //魔法のチャージ具合(spell長さ)により音変化
                 if (spellLength == 1)
                 {
-                    _audioSource.pitch = 1f;
-                    _audioSource.PlayOneShot(_magicChargeSound);
+                    _se2.pitch = 1f;
+                    _se2.PlayOneShot(_magicChargeSE);
                     _spellOutline.effectColor = new Color(1.0f, 1.0f, 1.0f, 0.0f);
                 }
                 else if (spellLength == 21)
                 {
-                    _audioSource.pitch = 1.2f;
-                    _audioSource.PlayOneShot(_magicChargeSound);
+                    _se2.pitch = 1.2f;
+                    _se2.PlayOneShot(_magicChargeSE);
                     _spellOutline.effectColor = new Color(0.0f, 0.0f, 1.0f, 0.4f);
                     _warmUpText.text = "もっと！！！";
                 }
                 else if (spellLength == 41)
                 {
-                    _audioSource.pitch = 1.4f;
-                    _audioSource.PlayOneShot(_magicChargeSound);
+                    _se2.pitch = 1.4f;
+                    _se2.PlayOneShot(_magicChargeSE);
                     _spellOutline.effectColor = new Color(1.0f, 0.0f, 1.0f, 0.6f);
                     _warmUpText.text = "もっと！！！！！！";
                 }
                 else if (spellLength == 60)
                 {
-                    _audioSource.pitch = 1.6f;
-                    _audioSource.PlayOneShot(_magicChargeSound);
+                    _se2.pitch = 1.6f;
+                    _se2.PlayOneShot(_magicChargeSE);
                     _spellOutline.effectColor = new Color(1.0f, 0.0f, 0.0f, 0.8f);
                     _warmUpText.text = "Enterキーを押して！";
                 }
