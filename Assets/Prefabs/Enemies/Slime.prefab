@@ -198,7 +198,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 97aa5ebf760fc4448bfcb732c6424f16, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _EnemyHP: 20
+  _EnemyHP: 15
   _EnemySprite: {fileID: 0}
   _EnemyHPText: {fileID: 2950108498106443411}
   _EnemyAttack: 1

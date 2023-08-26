@@ -640,7 +640,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
-  m_RootOrder: 5
+  m_RootOrder: 4
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &177365524
 GameObject:
@@ -939,7 +939,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _enemySpawnArea: {fileID: 1920743403}
   _enemyList: []
-  _enemyAmount: 20
+  _enemyAmount: 15
   _enemyAmountText: {fileID: 1870062657}
   _bossPanel: {fileID: 899614999}
   _targetTrans: {fileID: 1173193473}
@@ -1538,7 +1538,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
-  m_RootOrder: 4
+  m_RootOrder: 5
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &442742510
 GameObject:

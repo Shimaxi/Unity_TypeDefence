@@ -83,7 +83,14 @@ public class TitleManager : MonoBehaviour
 
     public void OnClickOptionBtn()
     {
-        _optionPanel.SetActive(true);
+        if (_optionPanel.activeSelf == false)
+        {
+            _optionPanel.SetActive(true);
+        }else
+        {
+            _optionPanel.SetActive(false);
+        }
+        
     }
 
     IEnumerator Title()
@@ -102,7 +109,29 @@ public class TitleManager : MonoBehaviour
     {
         _se.PlayOneShot(_decideSE);
         yield return new WaitForSeconds(0.5f);
-        SceneManager.LoadScene("Main");
+        SceneManager.LoadScene("Stage1");
+    }
+
+    public void OnclickStg2Btn()
+    {
+        StartCoroutine("Onclickstg2BtnCor");
+    }
+    public IEnumerator Onclickstg2BtnCor()
+    {
+        _se.PlayOneShot(_decideSE);
+        yield return new WaitForSeconds(0.5f);
+        SceneManager.LoadScene("Stage2");
+    }
+
+    public void OnclickStg0Btn()
+    {
+        StartCoroutine("Onclickstg0BtnCor");
+    }
+    public IEnumerator Onclickstg0BtnCor()
+    {
+        _se.PlayOneShot(_decideSE);
+        yield return new WaitForSeconds(0.5f);
+        SceneManager.LoadScene("Stage0");
     }
 
     IEnumerator WarmUpSpell()

@@ -33,9 +33,15 @@ public class GameManager : MonoBehaviour
     public GameObject _stageTalkObject; //会話のテキストなどの親オブジェクト
     public Text _stageTalkText; 
     private string[] _stageTalk1 = { 
-        "「敵がやってくるわ！私は呪文の詠唱に集中するから」\n「あなたはサポートをお願いね！」",
+        "「敵がやってくるわ！私は魔術の詠唱に集中するから」\n「あなたはサポートをお願いね！」",
         "彼女は強力な魔法使いですが、呪文の詠唱中は他のことができません\nなので、あなたが彼女をサポートしてあげてください",
         "あなたがキーボードをガチャガチャしている間は彼女は呪文の詠唱を行います\n良い感じに詠唱が出来たらエンターキーで呪文の発動を指示しましょう"};
+
+    private string[] _stageTalk2 = {
+        "「転送陣は使ってるかしら？」\n「敵に近づかれた時にこれを使えば回避出来るわ」",
+        "「あなたでも分かるよう番号を書いてあげといたわ」\n「私ってばなんて優しいのかしら！」",
+        "彼女が敵に襲われそうでピンチの時は\n転送陣を使って敵との距離を離してあげてください",
+        "転送陣はキーボードの数字キーに対応しています\n出来るだけ彼女を傷つけないよう頑張ってください"};
 
     //SpellManagerを一時的に無効化したりする
     public SpellManager _spellManager;
@@ -58,7 +64,17 @@ public class GameManager : MonoBehaviour
         _audioSource.clip = _StageBGM1;
         _audioSource.Play();
         
-        StartCoroutine("Stage1");
+        if (SceneManager.GetActiveScene().name == "Stage1")
+        {
+            StartCoroutine("Stage1");
+        } else if (SceneManager.GetActiveScene().name == "Stage2")
+        {
+            StartCoroutine("Stage2");
+        } else if (SceneManager.GetActiveScene().name == "Stage0")
+        {
+            StartCoroutine("Stage0");
+        }
+
     }
 
     IEnumerator Stage1()
@@ -70,6 +86,7 @@ public class GameManager : MonoBehaviour
         StartCoroutine("Clear");
 
     }
+
     //チュートリアル1
     IEnumerator Tutorial1()
     {
@@ -116,6 +133,120 @@ public class GameManager : MonoBehaviour
 
         yield return new WaitUntil(() => bossEnemy.activeSelf == false);
     }
+
+
+    IEnumerator Stage2()
+    {
+        yield return StartCoroutine("Tutorial2");
+
+        yield return StartCoroutine("Wave2");
+
+        StartCoroutine("Clear");
+
+    }
+
+    IEnumerator Tutorial2()
+    {
+        _spellManager.enabled = false; //一時的に呪文を唱えられないようにする
+
+        //チュートリアル1
+        _stageTalkObject.SetActive(true);
+        for (int talkNum = 0; talkNum < _stageTalk2.Length; talkNum++)
+        {
+            _stageTalkText.text = _stageTalk2[talkNum];
+            yield return new WaitUntil(() => Input.GetKeyDown(KeyCode.Return));
+            yield return new WaitUntil(() => Input.GetKeyDown(KeyCode.Return)); //なんでか分からないけどこうじゃないと動かない
+        }
+        _stageTalkObject.SetActive(false);
+        _spellManager.enabled = true; //お話が終わったので操作可能にする
+    }
+
+    IEnumerator Wave2()
+    {
+        GameObject newEnemy;
+        GameObject bossEnemy;
+        GameObject bossEnemyDisplay;
+
+        for (int i = 0; i < _enemyAmount; i++)
+        {
+            newEnemy = Instantiate(_slimePrefab, _enemySpawnArea);
+            _enemyList.Add(newEnemy.transform);
+            _enemyAmountText.text = "敵のこり" + (_enemyAmount - i - 1).ToString() + "体";
+            yield return new WaitForSeconds(1f);
+        }
+
+        yield return new WaitForSeconds(3f);
+
+        //ボス登場
+        bossEnemy = Instantiate(_slimePrefab, _enemySpawnArea);
+        bossEnemy.GetComponent<EnemyManager>()._bossText.gameObject.SetActive(true);
+        _enemyList.Add(bossEnemy.transform);
+
+        //ボスが登場したことをカットインで知らせる
+        _bossPanel.gameObject.SetActive(true);
+        bossEnemyDisplay = Instantiate(_slimePrefab, _bossPanel);
+        bossEnemyDisplay.GetComponent<EnemyManager>().enabled = false;
+        bossEnemyDisplay.GetComponent<EnemyManager>()._EnemySlider.gameObject.SetActive(false);
+
+        yield return new WaitUntil(() => bossEnemy.activeSelf == false);
+    }
+
+    IEnumerator Stage0()
+    {
+        yield return StartCoroutine("Wave0");
+
+        StartCoroutine("Clear");
+    }
+
+    IEnumerator Wave0()
+    {
+        GameObject newEnemy;
+        GameObject bossEnemy;
+        GameObject bossEnemyDisplay;
+
+        for (int i = 0; i < _enemyAmount; i++)
+        {
+            newEnemy = Instantiate(_slimePrefab, _enemySpawnArea);
+
+            if (i < 10)
+            {
+                newEnemy.GetComponent<EnemyManager>()._EnemySpeed *= 1f;
+            } else if (i < 20)
+            {
+                newEnemy.GetComponent<EnemyManager>()._EnemySpeed *= 1.5f;
+            } else if (i < 30)
+            {
+                newEnemy.GetComponent<EnemyManager>()._EnemySpeed *= 2.0f;
+            } else if (i < 40)
+            {
+                newEnemy.GetComponent<EnemyManager>()._EnemySpeed *= 2.5f;
+            } else if (i < 100)
+            {
+                newEnemy.GetComponent<EnemyManager>()._EnemySpeed *= 3.0f;
+            }
+
+            _enemyList.Add(newEnemy.transform);
+            _enemyAmountText.text = "敵のこり" + (_enemyAmount - i - 1).ToString() + "体";
+            yield return new WaitForSeconds(1f);
+        }
+
+        //ボス登場
+        bossEnemy = Instantiate(_slimePrefab, _enemySpawnArea);
+        bossEnemy.GetComponent<EnemyManager>()._bossText.gameObject.SetActive(true);
+        bossEnemy.GetComponent<EnemyManager>()._EnemyHP = 100;
+        bossEnemy.GetComponent<EnemyManager>()._EnemySpeed *= 3.0f;
+
+        _enemyList.Add(bossEnemy.transform);
+
+        //ボスが登場したことをカットインで知らせる
+        _bossPanel.gameObject.SetActive(true);
+        bossEnemyDisplay = Instantiate(_slimePrefab, _bossPanel);
+        bossEnemyDisplay.GetComponent<EnemyManager>().enabled = false;
+        bossEnemyDisplay.GetComponent<EnemyManager>()._EnemySlider.gameObject.SetActive(false);
+
+        yield return new WaitUntil(() => bossEnemy.activeSelf == false);
+    }
+
 
     IEnumerator Clear()
     {
