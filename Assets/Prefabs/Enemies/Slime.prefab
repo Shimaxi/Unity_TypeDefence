@@ -202,7 +202,7 @@ MonoBehaviour:
   _EnemySprite: {fileID: 0}
   _EnemyHPText: {fileID: 2950108498106443411}
   _EnemyAttack: 1
-  _EnemySpeed: 2
+  _EnemySpeed: 1
   _EnemySlider: {fileID: 2582633714782897524}
   _enemyGoal: {fileID: 0}
   _anim: {fileID: 7119442654443810291}
