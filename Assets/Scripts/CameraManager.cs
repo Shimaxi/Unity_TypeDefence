@@ -14,8 +14,6 @@ public class CameraManager : MonoBehaviour
 
     private float _shakeCount;
 
-
-
     void Start()
     {
         _initShakeMagnitude = _shakeMagnitude;
@@ -28,12 +26,12 @@ public class CameraManager : MonoBehaviour
         _shakeCount = 0;
         _shakeMagnitude = _initShakeMagnitude;
         _shakeTime = _initShakeTime;
-        if (SpellManager.s_spellLength >= 21)
+        if (SpellManager.s_spellLength >= 20)
         {
             _shakeMagnitude *= 2;
             _shakeTime *= 2;
         }
-        else if (SpellManager.s_spellLength >= 41)
+        else if (SpellManager.s_spellLength >= 40)
         {
             _shakeMagnitude *= 4;
             _shakeTime *= 3;
@@ -47,6 +45,14 @@ public class CameraManager : MonoBehaviour
         
     }
 
+    public void DamagedShake()
+    {
+        _shakeCount = 0;
+        _shakeMagnitude = _initShakeMagnitude/2;
+        _shakeTime = _initShakeTime/2;
+        StartCoroutine("ShakeCor");
+    }
+
     IEnumerator ShakeCor()
     {
         Vector3 initPos = this.transform.position;
@@ -56,9 +62,7 @@ public class CameraManager : MonoBehaviour
             float x = initPos.x + UnityEngine.Random.Range(-_shakeMagnitude, _shakeMagnitude);
             float y = initPos.y + UnityEngine.Random.Range(-_shakeMagnitude, _shakeMagnitude);
             this.transform.position = new Vector3(x, y, initPos.z);
-
             _shakeCount += Time.deltaTime;
-
             yield return null;
         }
         this.transform.position = initPos;

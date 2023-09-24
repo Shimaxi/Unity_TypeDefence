@@ -157,7 +157,6 @@ public class TitleManager : MonoBehaviour
             else if (Input.anyKeyDown && !Input.GetMouseButton(0) && !Input.GetMouseButton(1) && !Input.GetMouseButton(2))
             {
                 spellLength++;
-
                 int wordNum = UnityEngine.Random.Range(0, 4);
                 Debug.Log(spellLength);
                 switch (wordNum)
@@ -183,25 +182,25 @@ public class TitleManager : MonoBehaviour
                     _se2.PlayOneShot(_magicChargeSE);
                     _spellOutline.effectColor = new Color(1.0f, 1.0f, 1.0f, 0.0f);
                 }
-                else if (spellLength == 21)
+                else if (spellLength == 20)
                 {
                     _se2.pitch = 1.2f;
                     _se2.PlayOneShot(_magicChargeSE);
-                    _spellOutline.effectColor = new Color(0.0f, 0.0f, 1.0f, 0.4f);
+                    _spellOutline.effectColor = new Color(1.0f, 0.0f, 0.0f, 0.5f);
                     _warmUpText.text = "もっと！！！";
                 }
-                else if (spellLength == 41)
+                else if (spellLength == 40)
                 {
                     _se2.pitch = 1.4f;
                     _se2.PlayOneShot(_magicChargeSE);
-                    _spellOutline.effectColor = new Color(1.0f, 0.0f, 1.0f, 0.6f);
+                    _spellOutline.effectColor = new Color(0.0f, 0.0f, 1.0f, 0.5f);
                     _warmUpText.text = "もっと！！！！！！";
                 }
                 else if (spellLength == 60)
                 {
                     _se2.pitch = 1.6f;
                     _se2.PlayOneShot(_magicChargeSE);
-                    _spellOutline.effectColor = new Color(1.0f, 0.0f, 0.0f, 0.8f);
+                    _spellOutline.effectColor = new Color(1.0f, 0.0f, 1.0f, 0.5f);
                     _warmUpText.text = "Enterキーを押して！";
                 }
 

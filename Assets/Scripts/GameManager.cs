@@ -8,68 +8,58 @@ using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 using static UnityEngine.GraphicsBuffer;
 
-//ここでやること:敵の発生・照準の移動
+//ここでやること:ステージでの会話・敵の発生・照準の移動
 public class GameManager : MonoBehaviour
 {
     //敵の出現について
-    public Transform _enemySpawnArea; //出現位置(ここから上下にランダムにずらす)
-    public List<Transform> _enemyList; //敵の位置情報を格納しておくリスト
-    public int _enemyAmount; //敵の数
-    public Text _enemyAmountText; //敵の数を示すUIのテキスト
-    public Transform _bossPanel; //ボスが出現した際、それを表現するパネル
+    [SerializeField] private Transform _enemySpawnArea; //出現基本位置(ここから上下にランダムにずらす)
+    [SerializeField] private List<Transform> _enemyList; //敵の位置情報を格納しておくリスト
+    [Header("各ステージで変更する")]public int _enemyAmount; //敵の数
+    [SerializeField] private Text _enemyAmountText; //敵の数を示すUIのテキスト
+    [SerializeField] private Transform _bossPanel; //ボスが出現した際、それを表示するパネル
 
-    //照準について
+    //照準について(スクリプト分けたい)
     public Transform _targetTrans; //照準の位置情報
     public Transform _targetParentTrans; //照準を配置する親オブジェクト
-    int targetNum = 0; //照準はデフォルトだと敵キャラの登場順になっている・そこで使う変数
-    public Transform _expectedEffectSize; //技の予想される効果範囲
+    private int _targetNum = 0; //照準はデフォルトだと敵キャラの登場順になっている・そこで使う変数
+    //[SerializeField] private Transform _expectedEffectSize; //エフェクトの予想される効果範囲
 
     //BGMについて
     public AudioSource _audioSource; //BGMやファンファーレなどを流す
     public AudioClip _StageBGM1; //ステージのBGMその1
-    public AudioClip _clearSE; //クリア時のファンファーレ(本当はFFみたいにループするやつにしたい)
-
-    //戦闘前での会話について
-    public GameObject _stageTalkObject; //会話のテキストなどの親オブジェクト
-    public Text _stageTalkText; 
-    private string[] _stageTalk1 = { 
-        "「敵がやってくるわ！私は魔術の詠唱に集中するから」\n「あなたはサポートをお願いね！」",
-        "彼女は強力な魔法使いですが、呪文の詠唱中は他のことができません\nなので、あなたが彼女をサポートしてあげてください",
-        "あなたがキーボードをガチャガチャしている間は彼女は呪文の詠唱を行います\n良い感じに詠唱が出来たらエンターキーで呪文の発動を指示しましょう"};
-
-    private string[] _stageTalk2 = {
-        "「転送陣は使ってるかしら？」\n「敵に近づかれた時にこれを使えば回避出来るの」",
-        "「あなたでも分かるよう番号を書いてあげといたわ」\n「私ってばなんて優しいのかしら！」",
-        "彼女が敵に襲われそうでピンチの時は\n転送陣を使って敵との距離を離してあげてください",
-        "転送陣の番号はキーボードの数字キーに対応しています\n出来るだけ彼女を傷つけないよう頑張ってください"};
+    public AudioClip _clearBGM; //クリア時のファンファーレ(本当はFFみたいにループするやつにしたい)
 
     //SpellManagerを一時的に無効化したりする
     public SpellManager _spellManager;
 
-    [Header("以下、モンスターのプレハブを入れる")]
-    public GameObject _slimePrefab;
-    public GameObject _redSlimePrefab;
+    //Tutorialの表示
+    public TutorialManager _tutorial;
 
+    //ゲームオーバー・ゲームクリアのパネル
     public GameObject _gameOverPanel;
     public Text _gameOverText;
 
-    // Start is called before the first frame update
+    [Header("以下、モンスターのプレハブを入れる")]
+    public GameObject _slimePrefab;
+    public GameObject _redSlimePrefab;//未実装
+
     void Start()
     {
         //画面の邪魔になるものを一旦どかす
-        _stageTalkObject.SetActive(false);
         _bossPanel.gameObject.SetActive(false);
         _spellManager.enabled = true;
+
         //BGM流す
         _audioSource.clip = _StageBGM1;
         _audioSource.Play();
         
+        //ステージによって変更
         if (SceneManager.GetActiveScene().name == "Stage1")
         {
-            StartCoroutine("Stage1");
+            StartCoroutine(Stage(1));
         } else if (SceneManager.GetActiveScene().name == "Stage2")
         {
-            StartCoroutine("Stage2");
+            StartCoroutine(Stage(2));
         } else if (SceneManager.GetActiveScene().name == "Stage0")
         {
             StartCoroutine("Stage0");
@@ -77,34 +67,19 @@ public class GameManager : MonoBehaviour
 
     }
 
-    IEnumerator Stage1()
+    IEnumerator Stage(int stageNum)
     {
-        yield return StartCoroutine("Tutorial1");
+        if(_tutorial != null)
+        {
+            yield return StartCoroutine(_tutorial.Tutorial(stageNum));
+        }
 
-        yield return StartCoroutine("Wave1");
+        yield return StartCoroutine(Wave());
 
         StartCoroutine("Clear");
-
     }
 
-    //チュートリアル1
-    IEnumerator Tutorial1()
-    {
-        _spellManager.enabled = false; //一時的に呪文を唱えられないようにする
-
-        //チュートリアル1
-        _stageTalkObject.SetActive(true);
-        for (int talkNum = 0; talkNum < _stageTalk1.Length; talkNum++)
-        {
-            _stageTalkText.text = _stageTalk1[talkNum];
-            yield return new WaitUntil(() => Input.GetKeyDown(KeyCode.Return));
-            yield return new WaitUntil(() => Input.GetKeyDown(KeyCode.Return)); //なんでか分からないけどこうじゃないと動かない
-        }
-        _stageTalkObject.SetActive(false);
-        _spellManager.enabled = true; //お話が終わったので操作可能にする
-    }
-
-    IEnumerator Wave1()
+    IEnumerator Wave()
     {
         GameObject newEnemy;
         GameObject bossEnemy;
@@ -129,67 +104,11 @@ public class GameManager : MonoBehaviour
         _bossPanel.gameObject.SetActive(true);
         bossEnemyDisplay = Instantiate(_slimePrefab, _bossPanel);
         bossEnemyDisplay.GetComponent<EnemyManager>().enabled = false;
-        bossEnemyDisplay.GetComponent<EnemyManager>()._EnemySlider.gameObject.SetActive(false);
+        bossEnemyDisplay.GetComponent<EnemyManager>()._enemyHPSlider.gameObject.SetActive(false);
 
         yield return new WaitUntil(() => bossEnemy.activeSelf == false);
     }
-
-
-    IEnumerator Stage2()
-    {
-        yield return StartCoroutine("Tutorial2");
-
-        yield return StartCoroutine("Wave2");
-
-        StartCoroutine("Clear");
-
-    }
-
-    IEnumerator Tutorial2()
-    {
-        _spellManager.enabled = false; //一時的に呪文を唱えられないようにする
-
-        //チュートリアル1
-        _stageTalkObject.SetActive(true);
-        for (int talkNum = 0; talkNum < _stageTalk2.Length; talkNum++)
-        {
-            _stageTalkText.text = _stageTalk2[talkNum];
-            yield return new WaitUntil(() => Input.GetKeyDown(KeyCode.Return));
-            yield return new WaitUntil(() => Input.GetKeyDown(KeyCode.Return)); //なんでか分からないけどこうじゃないと動かない
-        }
-        _stageTalkObject.SetActive(false);
-        _spellManager.enabled = true; //お話が終わったので操作可能にする
-    }
-
-    IEnumerator Wave2()
-    {
-        GameObject newEnemy;
-        GameObject bossEnemy;
-        GameObject bossEnemyDisplay;
-
-        for (int i = 0; i < _enemyAmount; i++)
-        {
-            newEnemy = Instantiate(_slimePrefab, _enemySpawnArea);
-            _enemyList.Add(newEnemy.transform);
-            _enemyAmountText.text = "敵のこり" + (_enemyAmount - i - 1).ToString() + "体";
-            yield return new WaitForSeconds(1f);
-        }
-
-        yield return new WaitForSeconds(3f);
-
-        //ボス登場
-        bossEnemy = Instantiate(_slimePrefab, _enemySpawnArea);
-        bossEnemy.GetComponent<EnemyManager>()._bossText.gameObject.SetActive(true);
-        _enemyList.Add(bossEnemy.transform);
-
-        //ボスが登場したことをカットインで知らせる
-        _bossPanel.gameObject.SetActive(true);
-        bossEnemyDisplay = Instantiate(_slimePrefab, _bossPanel);
-        bossEnemyDisplay.GetComponent<EnemyManager>().enabled = false;
-        bossEnemyDisplay.GetComponent<EnemyManager>()._EnemySlider.gameObject.SetActive(false);
-
-        yield return new WaitUntil(() => bossEnemy.activeSelf == false);
-    }
+    
 
     IEnumerator Stage0()
     {
@@ -203,27 +122,20 @@ public class GameManager : MonoBehaviour
         GameObject newEnemy;
         GameObject bossEnemy;
         GameObject bossEnemyDisplay;
+        float reinforce = 1;
 
         for (int i = 0; i < _enemyAmount; i++)
         {
             newEnemy = Instantiate(_slimePrefab, _enemySpawnArea);
 
-            if (i < 10)
+
+            if (i % 10 == 0 &&  i != 0)
             {
-                newEnemy.GetComponent<EnemyManager>()._EnemySpeed *= 1f;
-            } else if (i < 20)
-            {
-                newEnemy.GetComponent<EnemyManager>()._EnemySpeed *= 1.5f;
-            } else if (i < 30)
-            {
-                newEnemy.GetComponent<EnemyManager>()._EnemySpeed *= 2.0f;
-            } else if (i < 40)
-            {
-                newEnemy.GetComponent<EnemyManager>()._EnemySpeed *= 2.5f;
-            } else if (i < 100)
-            {
-                newEnemy.GetComponent<EnemyManager>()._EnemySpeed *= 3.0f;
+                reinforce += 0.2f;
             }
+
+            newEnemy.GetComponent<EnemyManager>()._enemySpeed *= reinforce;
+            newEnemy.GetComponent<EnemyManager>()._enemyHP = (int)(newEnemy.GetComponent<EnemyManager>()._enemyHP * reinforce);
 
             _enemyList.Add(newEnemy.transform);
             _enemyAmountText.text = "敵のこり" + (_enemyAmount - i - 1).ToString() + "体";
@@ -233,8 +145,8 @@ public class GameManager : MonoBehaviour
         //ボス登場
         bossEnemy = Instantiate(_slimePrefab, _enemySpawnArea);
         bossEnemy.GetComponent<EnemyManager>()._bossText.gameObject.SetActive(true);
-        bossEnemy.GetComponent<EnemyManager>()._EnemyHP = 100;
-        bossEnemy.GetComponent<EnemyManager>()._EnemySpeed *= 3.0f;
+        bossEnemy.GetComponent<EnemyManager>()._enemyHP = 100;
+        bossEnemy.GetComponent<EnemyManager>()._enemySpeed *= 3.0f;
 
         _enemyList.Add(bossEnemy.transform);
 
@@ -242,8 +154,10 @@ public class GameManager : MonoBehaviour
         _bossPanel.gameObject.SetActive(true);
         bossEnemyDisplay = Instantiate(_slimePrefab, _bossPanel);
         bossEnemyDisplay.GetComponent<EnemyManager>().enabled = false;
-        bossEnemyDisplay.GetComponent<EnemyManager>()._EnemySlider.gameObject.SetActive(false);
+        bossEnemyDisplay.GetComponent<EnemyManager>()._enemyHPSlider.gameObject.SetActive(false);
+        bossEnemyDisplay.GetComponent<BoxCollider2D>().enabled = false;
 
+        //最後のボスが倒されるまで待つ
         yield return new WaitUntil(() => bossEnemy.activeSelf == false);
     }
 
@@ -251,19 +165,8 @@ public class GameManager : MonoBehaviour
     IEnumerator Clear()
     {
         yield return new WaitForSeconds(1f);
-
-        /*
-        _stageTalkObject.SetActive(true);
-        _stageTalkText.text = "Clear!!!";
-        _spellManager.enabled = false;
         _audioSource.Stop();
-        _audioSource.PlayOneShot(_clearSE);
-
-        yield return new WaitUntil(() => Input.GetKeyDown(KeyCode.Return));
-        */
-
-        _audioSource.Stop();
-        _audioSource.PlayOneShot(_clearSE);
+        _audioSource.PlayOneShot(_clearBGM);
         _gameOverText.text = "ステージクリア！！！";
         _gameOverPanel.SetActive(true);
         _spellManager.enabled = false;
@@ -272,31 +175,41 @@ public class GameManager : MonoBehaviour
    
     void Update()
     {
-        //照準の移動
-        if (_enemyList.Count != targetNum)
+        //照準の移動(新バージョン)
+        //スペースキーを押すと、照準が次に現れた敵に移る(端まで行くと先頭にリセット)
+        if (Input.GetKeyDown(KeyCode.Space))
         {
-            //重いかもしれない(要検討)
-            //敵の出現順に照準が移動する
-            if (_enemyList[targetNum] != null && _enemyList[targetNum].gameObject.activeSelf == true && _enemyList[targetNum].gameObject.GetComponent<EnemyManager>()._EnemyHP != 0)
+            if (_enemyList.Count != 0)
             {
-                _targetTrans.position = _enemyList[targetNum].position;
+                if(_targetNum + 1 < _enemyList.Count)
+                {
+                    _targetNum++;
+                }
+                else
+                {
+                    _targetNum = 0;
+                }
+
             }
-            else
-            {
-                targetNum++;
-            }
+            
         }
-        else
+        if (_enemyList.Count != 0)
         {
-            _targetTrans.position = Vector3.zero;
+            while (_enemyList[_targetNum].gameObject.GetComponent<EnemyManager>()._enemyHP == 0)
+            {
+                _targetNum++;
+                if (_targetNum  == _enemyList.Count)
+                {
+                    Debug.Log("例外");
+                    _targetNum = 0;
+                    break;
+                }
+            }
+            _targetTrans.position = _enemyList[_targetNum].position;
         }
-
-        //技の効果範囲を表示
-        _expectedEffectSize.transform.localScale = new Vector3(SpellManager.s_effectSize, SpellManager.s_effectSize, 0);
-
-        
     }
 
+    //playerManagerから呼び出し
     public void GameOver()
     {
         StartCoroutine("GameOverCor");

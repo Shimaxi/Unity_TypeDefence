@@ -762,7 +762,7 @@ RectTransform:
   m_GameObject: {fileID: 183201791}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalScale: {x: 1.1, y: 1.1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 142604195}
@@ -4023,7 +4023,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: "\u723D\u5FEB\uFF01\n\u30AC\u30C1\u30E3\u30AC\u30C1\u30E3\u30BF\u30EF\u30FC\u30C7\u30A3\u30D5\u30A7\u30F3\u30B9\uFF01"
+  m_Text: "\u723D\u5FEB\uFF01\u7206\u88C2\uFF01\n\u30AC\u30C1\u30E3\u30AC\u30C1\u30E3\u30BF\u30A4\u30D7\u30B5\u30D0\u30A4\u30D0\u30FC\uFF01"
 --- !u!222 &2138366430
 CanvasRenderer:
   m_ObjectHideFlags: 0

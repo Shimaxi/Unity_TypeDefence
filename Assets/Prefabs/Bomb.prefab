@@ -70,7 +70,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 21300000, guid: 6f4bed43e5cb3cf478d0b720c48066e8, type: 3}
+  m_Sprite: {fileID: 0}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -93,7 +93,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _fadeTime: 0.5
-  _explosionSound: {fileID: 8300000, guid: 167b992b9e308c44aa7d6ea90cced993, type: 3}
+  _explosionSE: {fileID: 8300000, guid: 167b992b9e308c44aa7d6ea90cced993, type: 3}
+  _flameSE: {fileID: 8300000, guid: 6703f8747b9e45e4ba7759c94e88da60, type: 3}
+  _freezeSE: {fileID: 8300000, guid: 32acfe61fc96514429b12535cc76b748, type: 3}
   _audioSource: {fileID: -6265647835541765162}
 --- !u!82 &-6265647835541765162
 AudioSource:
