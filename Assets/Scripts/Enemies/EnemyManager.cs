@@ -12,7 +12,7 @@ public class EnemyManager : MonoBehaviour
     private int _enemyMaxHP;//敵のMAXHP
     public Slider _enemyHPSlider;//敵のHPバー
     [SerializeField] private Text _enemyHPText;//敵のHPの表示
-    [SerializeField] private Sprite _EnemySprite; //本当は要らないんだけど、パッと見で分かりやすくするため
+    [SerializeField] private Sprite _EnemySprite; //敵の画像(確認用)
     public int _enemyAttack;//敵の攻撃力(未実装)
     public float _enemySpeed;//敵の移動速度
     
@@ -62,22 +62,24 @@ public class EnemyManager : MonoBehaviour
         //移動状態の際には
         if (_anim.GetCurrentAnimatorStateInfo(0).IsName("Walking") == true)
         {
-            this.transform.position = Vector2.MoveTowards(this.transform.position, _enemyGoal.position, _enemySpeed * Time.deltaTime);
+            this.transform.position = Vector2.MoveTowards(this.transform.position, _enemyGoal.position, _enemySpeed * Time.deltaTime); //プレイヤー追尾
         }
         
         Vector2 distance;
         distance = this.transform.position - _enemyGoal.position;
         if(distance == new Vector2(0f,0f))
         {
-            _anim.SetBool("Attack2", true);
+            _anim.SetBool("AttackBool", true);
         }
         else
         {
-            _anim.SetBool("Attack2", false); //暗黙的に1フレーム挟めるので、2回繰り返すのを防げる(SetTriggerでは駄目)
+            _anim.SetBool("AttackBool", false); //暗黙的に1フレーム挟めるので、2回繰り返すのを防げる(SetTriggerでは駄目)
         }
 
+        //やけど状態の際は
         if(_isBurning == true)
         {
+            //定期的にダメージを与える
             _burningCount++;
             _burningImage.color = new Color(1, 1, 1, acolor);
             acolor -= Time.deltaTime;
@@ -99,9 +101,6 @@ public class EnemyManager : MonoBehaviour
                     _enemyHPText.text = _enemyHP.ToString() + " / " + _enemyMaxHP.ToString();
                     _enemyHPSlider.value = (float)_enemyHP / _enemyMaxHP;
                     _additionalEffectCount = 0;
-                    
-                    //_anim.SetTrigger("Damage"); //【要確認】
-                    //StartCoroutine("KnockBack");
                 }
             }
         }
@@ -112,11 +111,36 @@ public class EnemyManager : MonoBehaviour
     {
         if(other.gameObject.tag == "Effect")
         {
+            //エフェクト(爆発)に触れた際
             _additionalEffectCount = 0;
-            DamageCalculate();
+            DamageCalculate(); //ダメージ計算
+        }
+        if (other.gameObject.tag == "Effect2")
+        {
+            //エフェクト(使い魔の攻撃)に触れた際
+            _additionalEffectCount = 0;
+            _enemyHP -= 20;
+            if (_enemyHP <= 0)
+            {
+                _enemyHP = 0;
+                _enemyHPText.text = _enemyHP.ToString() + " / " + _enemyMaxHP.ToString();
+                _enemyHPSlider.value = (float)_enemyHP / _enemyMaxHP;
+                StartCoroutine("Dead");
+                _anim.SetTrigger("Damage");
+            }
+            else
+            {
+                _enemyHPText.text = _enemyHP.ToString() + " / " + _enemyMaxHP.ToString();
+                _enemyHPSlider.value = (float)_enemyHP / _enemyMaxHP;
+
+                _anim.SetTrigger("Damage");
+                _knockBackMagnitude = 2.0f;
+                StartCoroutine("KnockBack");
+            }
         }
     }
 
+    //ダメージ計算+追加効果適応
     void DamageCalculate()
     {
         _enemyHP -= SpellManager.s_spellDamage;
@@ -137,16 +161,20 @@ public class EnemyManager : MonoBehaviour
             _anim.SetTrigger("Damage");
             if(SpellManager.s_spellLength < 20)
             {
-                StartCoroutine("KnockBack");
+                StartCoroutine("KnockBack");//呪文長さ19以下ではノックバック
             }
             else if (SpellManager.s_spellLength < 40)
             {
                 StartCoroutine("KnockBack");
-                StartCoroutine("Burning");
+                StartCoroutine("Burning");//呪文長さ39以下ではノックバック+炎上
             }
-            else if (SpellManager.s_spellLength <= 60)
+            else if (SpellManager.s_spellLength < 60)
             {
-                StartCoroutine("Frozen");
+                StartCoroutine("Frozen");//呪文長さ59以下では凍結
+            }else if (SpellManager.s_spellLength == 60)
+            {
+                StartCoroutine("Burning");
+                StartCoroutine("Frozen");//呪文長さ60では炎上+凍結
             }
         }
     }
@@ -171,17 +199,16 @@ public class EnemyManager : MonoBehaviour
     {
         Vector3 initPos = this.transform.position;
         this.GetComponent<Image>().material = _frozenMaterial;
-        _anim.speed = 0;
         while (_additionalEffectCount < _frozenTime)
         {
-            this.transform.position = initPos;
-            
+            if (_enemyHP != 0)
+            {
+                this.transform.position = initPos;
+            }
             _additionalEffectCount += Time.deltaTime;
             yield return null;
         }
         this.GetComponent<Image>().material = null;
-        
-        _anim.speed = 1;
         _anim.SetTrigger("Walking");
         
     }

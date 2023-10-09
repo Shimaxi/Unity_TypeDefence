@@ -20,7 +20,7 @@ public class TutorialManager : MonoBehaviour
         "「あなたでも分かるよう番号を書いてあげといたわ\n私ってばなんて優しいのかしら！」",
         "・・・",
         "彼女が敵に襲われそうでピンチの時は\n転送陣を使って敵との距離を離してあげてください",
-        "転送陣の番号はキーボードの数字キーに対応しています\n出来るだけ彼女を傷つけないよう頑張ってください"};
+        "転送陣の番号と同じキーボードの数字キーを押すと発動します\n出来るだけ彼女を傷つけないよう頑張ってください"};
 
     string[] stageTalk;
 
@@ -42,7 +42,7 @@ public class TutorialManager : MonoBehaviour
         {
             _stageTalkText.text = stageTalk[talkNum];
             yield return new WaitUntil(() => Input.GetKeyDown(KeyCode.Return));
-            yield return new WaitUntil(() => Input.GetKeyDown(KeyCode.Return)); //なんでか分からないけどこうじゃないと動かない
+            yield return new WaitUntil(() => Input.GetKeyDown(KeyCode.Return)); 
         }
         _stageTalkPanel.SetActive(false);
     }

@@ -28,15 +28,11 @@ public class SpellManager : MonoBehaviour
     [SerializeField] private GameObject _bombPrefab;
     [SerializeField] private Transform _effectsTrans;
 
-
     //照準について
     [SerializeField] private Transform _targetMarkTrans;
     [SerializeField] private Transform _magicCircleTrans; //エフェクトの予想される効果範囲
     [SerializeField] private Image _magicCircleImage; //エフェクトの予想される効果範囲
     [SerializeField] private Sprite[] _magicCircleSprites = new Sprite[4];
-
-
-
 
     //実装検討機能　二重詠唱
     private bool _isDualcaster = false;
@@ -70,16 +66,6 @@ public class SpellManager : MonoBehaviour
                 bomb.transform.localScale = new Vector3(s_effectSize, s_effectSize, 0);//詠唱の長さによってエフェクトのサイズ変更
                 _magicCircleTrans.transform.localScale = new Vector3(0, 0, 0);
                 _isSpellOver = true;
-                /*
-                if(s_spellLength == 60)
-                {
-                    _isDualcaster = true;
-                }
-                else
-                {
-                    _isDualcaster = false;
-                }
-                */
                 _cameraManager.Shake(); //カメラを揺らす演出
                 s_effectSize = 0;
             }
@@ -96,7 +82,7 @@ public class SpellManager : MonoBehaviour
                 _isSpellOver = false; 
             }
 
-            s_effectSize = s_spellLength * _spellSizeRate + 1; //
+            s_effectSize = s_spellLength * _spellSizeRate + 1; 
             if(s_spellLength < 60)
             {
                 int count = 1;
@@ -147,7 +133,7 @@ public class SpellManager : MonoBehaviour
                 else if (s_spellLength == 60)
                 {
                     _spellAdditionalText.text = "炎上\n+凍結";
-                    _spellAdditionalText.color = new Color(0.5f, 0.0f, 0.5f, 1.0f);
+                    _spellAdditionalText.color = new Color(1.0f, 0.0f, 1.0f, 1.0f);
                 }
 
                 //魔法のチャージ具合(spell長さ)により音と色変化

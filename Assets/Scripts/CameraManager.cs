@@ -14,10 +14,14 @@ public class CameraManager : MonoBehaviour
 
     private float _shakeCount;
 
+    private Vector3 _initPos;
+
     void Start()
     {
         _initShakeMagnitude = _shakeMagnitude;
         _initShakeTime = _shakeTime;
+
+        _initPos = this.transform.position;
     }
 
     //SpellManager‚©‚çŒÄ‚Î‚ê‚ÄƒJƒƒ‰‚ğ—h‚ç‚·
@@ -45,6 +49,7 @@ public class CameraManager : MonoBehaviour
         
     }
 
+    //PlayerManager‚©‚çŒÄ‚Î‚ê‚Äã‚­ƒJƒƒ‰‚ğ—h‚ç‚·
     public void DamagedShake()
     {
         _shakeCount = 0;
@@ -55,16 +60,14 @@ public class CameraManager : MonoBehaviour
 
     IEnumerator ShakeCor()
     {
-        Vector3 initPos = this.transform.position;
-
         while (_shakeCount < _shakeTime)
         {
-            float x = initPos.x + UnityEngine.Random.Range(-_shakeMagnitude, _shakeMagnitude);
-            float y = initPos.y + UnityEngine.Random.Range(-_shakeMagnitude, _shakeMagnitude);
-            this.transform.position = new Vector3(x, y, initPos.z);
+            float x = _initPos.x + UnityEngine.Random.Range(-_shakeMagnitude, _shakeMagnitude);
+            float y = _initPos.y + UnityEngine.Random.Range(-_shakeMagnitude, _shakeMagnitude);
+            this.transform.position = new Vector3(x, y, _initPos.z);
             _shakeCount += Time.deltaTime;
             yield return null;
         }
-        this.transform.position = initPos;
+        this.transform.position = _initPos;
     }
 }

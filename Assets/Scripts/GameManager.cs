@@ -200,7 +200,6 @@ public class GameManager : MonoBehaviour
                 _targetNum++;
                 if (_targetNum  == _enemyList.Count)
                 {
-                    Debug.Log("—áŠO");
                     _targetNum = 0;
                     break;
                 }
