@@ -5,7 +5,8 @@ using UnityEngine;
 using UnityEngine.UI;
 using static UnityEngine.GraphicsBuffer;
 
-public class EnemyManager : MonoBehaviour
+//敵キャラクターの管理
+public class Enemy : MonoBehaviour
 {
     //敵の基本的なステータス情報
     public int _enemyHP;//敵のHP
@@ -24,23 +25,22 @@ public class EnemyManager : MonoBehaviour
     [SerializeField, Header("ノックバックの大きさ")]
     private float _knockBackMagnitude;
 
-    [SerializeField, Header("氷結時間")]
-    private float _frozenTime;
-    [SerializeField] private Material _frozenMaterial;//氷結時にかぶせておくマテリアル
-
     [SerializeField, Header("炎上状態かどうか")]
     private bool _isBurning = false;
     private float _burningCount;
     public Image _burningImage; //炎の画像
+    float acolor = 1;//炎の画像の透明度
 
-    private float _additionalEffectCount;//ノックバックや氷結時間をカウントする際に使うやつ
+    [SerializeField]private float _additionalEffectCount;//ノックバック時間をカウントする際に使うやつ
 
     public Text _bossText;//ボスの表記
-    [SerializeField] private GameObject _hitBox;//攻撃判定
+    [SerializeField] private GameObject _hitBox;//攻撃のヒットボックス
+
+    
 
     void Start()
     {
-        //不要なものが表示されてしまわないようにする
+        //不要なものが表示されてしまわないように
         _hitBox.SetActive(false);
 
         //初期体力を設定
@@ -56,15 +56,15 @@ public class EnemyManager : MonoBehaviour
         _enemyGoal = GameObject.Find("Player").GetComponent<Transform>();
     }
 
-    float acolor = 1;
     void FixedUpdate()
     {
-        //移動状態の際には
+        //移動状態の際には主人公を追尾
         if (_anim.GetCurrentAnimatorStateInfo(0).IsName("Walking") == true)
         {
             this.transform.position = Vector2.MoveTowards(this.transform.position, _enemyGoal.position, _enemySpeed * Time.deltaTime); //プレイヤー追尾
         }
         
+        //主人公の位置に来たら攻撃
         Vector2 distance;
         distance = this.transform.position - _enemyGoal.position;
         if(distance == new Vector2(0f,0f))
@@ -76,8 +76,8 @@ public class EnemyManager : MonoBehaviour
             _anim.SetBool("AttackBool", false); //暗黙的に1フレーム挟めるので、2回繰り返すのを防げる(SetTriggerでは駄目)
         }
 
-        //やけど状態の際は
-        if(_isBurning == true)
+        //やけど状態の際の定数ダメージ
+        if(_isBurning == true && _enemyHP > 0)
         {
             //定期的にダメージを与える
             _burningCount++;
@@ -100,24 +100,22 @@ public class EnemyManager : MonoBehaviour
                 {
                     _enemyHPText.text = _enemyHP.ToString() + " / " + _enemyMaxHP.ToString();
                     _enemyHPSlider.value = (float)_enemyHP / _enemyMaxHP;
-                    _additionalEffectCount = 0;
                 }
             }
         }
-
     }
 
     void OnTriggerEnter2D(Collider2D other)
     {
         if(other.gameObject.tag == "Effect")
         {
-            //エフェクト(爆発)に触れた際
+            //エフェクト(主人公の攻撃の爆発)に触れた際のダメージ計算
             _additionalEffectCount = 0;
             DamageCalculate(); //ダメージ計算
         }
         if (other.gameObject.tag == "Effect2")
         {
-            //エフェクト(使い魔の攻撃)に触れた際
+            //エフェクト(使い魔の攻撃・ドクロの爆風)に触れた際のダメージ計算
             _additionalEffectCount = 0;
             _enemyHP -= 20;
             if (_enemyHP <= 0)
@@ -134,7 +132,6 @@ public class EnemyManager : MonoBehaviour
                 _enemyHPSlider.value = (float)_enemyHP / _enemyMaxHP;
 
                 _anim.SetTrigger("Damage");
-                _knockBackMagnitude = 2.0f;
                 StartCoroutine("KnockBack");
             }
         }
@@ -158,13 +155,14 @@ public class EnemyManager : MonoBehaviour
             _enemyHPText.text = _enemyHP.ToString() + " / " + _enemyMaxHP.ToString();
             _enemyHPSlider.value = (float)_enemyHP / _enemyMaxHP;
 
-            _anim.SetTrigger("Damage");
             if(SpellManager.s_spellLength < 20)
             {
+                _anim.SetTrigger("Damage");
                 StartCoroutine("KnockBack");//呪文長さ19以下ではノックバック
             }
             else if (SpellManager.s_spellLength < 40)
             {
+                _anim.SetTrigger("Damage");
                 StartCoroutine("KnockBack");
                 StartCoroutine("Burning");//呪文長さ39以下ではノックバック+炎上
             }
@@ -179,6 +177,7 @@ public class EnemyManager : MonoBehaviour
         }
     }
 
+    //ノックバック
     IEnumerator KnockBack()
     {
         Vector3 initPos = this.transform.position;
@@ -187,41 +186,35 @@ public class EnemyManager : MonoBehaviour
         {
             float x = initPos.x + _knockBackMagnitude;
             this.transform.position = new Vector3(x, initPos.y, initPos.z);
-            //this.transform.position = new Vector3(initPos.x, initPos.y, initPos.z);
             _additionalEffectCount += Time.deltaTime;
-
+            this.GetComponent<BoxCollider2D>().enabled = false;
             yield return null;
         }
+        this.GetComponent<BoxCollider2D>().enabled = true;
         _anim.SetTrigger("Walking");
     }
 
-    IEnumerator Frozen()
-    {
-        Vector3 initPos = this.transform.position;
-        this.GetComponent<Image>().material = _frozenMaterial;
-        while (_additionalEffectCount < _frozenTime)
-        {
-            if (_enemyHP != 0)
-            {
-                this.transform.position = initPos;
-            }
-            _additionalEffectCount += Time.deltaTime;
-            yield return null;
-        }
-        this.GetComponent<Image>().material = null;
-        _anim.SetTrigger("Walking");
-        
-    }
-
+    //炎上
     IEnumerator Burning()
     {
         _isBurning = true;
         _burningCount = 0;
         yield return null;
     }
+    //凍結
+    IEnumerator Frozen()
+    {
+        _anim.SetTrigger("Frozen");
+        this.GetComponent<BoxCollider2D>().enabled = true;
+        yield return null;
+    }
 
+
+    //体力が0になったら物理演算で吹っ飛ぶ演出
     IEnumerator Dead()
     {
+        _isBurning = false;
+        GameManager.s_deadEnemyList.Add(this.transform);
         Rigidbody2D rb = this.GetComponent<Rigidbody2D>();
         rb.bodyType = RigidbodyType2D.Dynamic;
         rb.AddForce(new Vector3(2.0f, 10.0f, 0f), ForceMode2D.Impulse);

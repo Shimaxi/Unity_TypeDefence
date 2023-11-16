@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+//“G‚ÉUŒ‚‚µ‚½‚â“G‚ÉUŒ‚‚³‚ê‚½‚ÉƒJƒƒ‰‚ğ—h‚ç‚·
 public class CameraManager : MonoBehaviour
 {
     [SerializeField, Header("U“®‚·‚éŠÔ")]
@@ -24,7 +25,7 @@ public class CameraManager : MonoBehaviour
         _initPos = this.transform.position;
     }
 
-    //SpellManager‚©‚çŒÄ‚Î‚ê‚ÄƒJƒƒ‰‚ğ—h‚ç‚·
+    //–‚–@”­“®SpellManager‚©‚çŒÄ‚Î‚ê‚ÄƒJƒƒ‰‚ğ—h‚ç‚·
     public void Shake()
     {
         _shakeCount = 0;
@@ -49,7 +50,7 @@ public class CameraManager : MonoBehaviour
         
     }
 
-    //PlayerManager‚©‚çŒÄ‚Î‚ê‚Äã‚­ƒJƒƒ‰‚ğ—h‚ç‚·
+    //ƒ_ƒ[ƒW‚ğó‚¯‚½PlayerManager‚©‚çŒÄ‚Î‚ê‚Äã‚­ƒJƒƒ‰‚ğ—h‚ç‚·
     public void DamagedShake()
     {
         _shakeCount = 0;

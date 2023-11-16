@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
+//爆発のエフェクトを管理・Bombプレハブに入れる
 public class EffectManager : MonoBehaviour
 {
     public float _fadeTime = 0.5f;

@@ -6,11 +6,11 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
-//この要素は本当に要るかは議論の余地があるかも
 public class PlayerManager : MonoBehaviour
 {
     //転送陣の位置について
     public Transform[] _warpPoints = new Transform[3];
+    private int _currentPosition = 1;
 
     //攻撃を受けた後の無敵時間について
     public bool _isHit;
@@ -18,24 +18,21 @@ public class PlayerManager : MonoBehaviour
     public int _loopCount;
     public Image _imageSelf;
     public BoxCollider2D _colliderSelf;
-
     public Animator _damagedAnim;
 
-    private int _currentPosition = 1;
-
-    //使い魔の行動
+    //使い魔のヘルプ
     public Transform[] _barkEffects = new Transform[3];
     [SerializeField] private GameObject _catHelpPanel;
 
 
-    //プレイヤーが出す音
+    //プレイヤーマネージャーから出す音
     public AudioSource _audioSource;
     public AudioClip _damagedSE;
     public AudioClip _barkSE;
     public AudioClip _warpSE;
     public AudioClip _downSE;
 
-    //プレイヤーの体力
+    //プレイヤーの体力のUI
     public int _playerHP;
     int _playerMaxHP;
     public Transform _hpTrans;
@@ -52,9 +49,9 @@ public class PlayerManager : MonoBehaviour
     public GameManager _gameManager;
     public CameraManager _cameraManager;
 
-    // Start is called before the first frame update
     void Start()
     {
+        //プレイヤーの体力UI表示
         _playerMaxHP = _playerHP;
         _playerTachie.sprite = _playerNormal;
 
@@ -64,15 +61,20 @@ public class PlayerManager : MonoBehaviour
         }
     }
 
-
+    //敵の攻撃でダメージ
     void OnTriggerEnter2D(Collider2D other)
     {
         if (other.gameObject.tag == "EnemyAttack")
         {
             StartCoroutine("Hit");
         }
+        if (other.gameObject.tag == "Effect2")
+        {
+            StartCoroutine("Hit");
+        }
     }
 
+    //敵の攻撃をくらった時
     IEnumerator Hit()
     {
         //当たりフラグをtrueに変更（当たっている状態）
@@ -132,12 +134,10 @@ public class PlayerManager : MonoBehaviour
     //ダメージを受けると使い魔が一時的に敵を退ける
     IEnumerator Bark()
     {
-        
         GameObject bark = _barkEffects[_currentPosition].gameObject;
         bark.SetActive(true);
         yield return new WaitForSeconds(0.5f);
         bark.SetActive(false);
-        
     }
 
     //体力の表示を行う

@@ -14,8 +14,6 @@ public class TitleManager : MonoBehaviour
     public Outline _spellOutline;
     public static bool s_isWarmUpDone;
 
-    
-
     //フェードイン演出
     public Fade _fade;
 
@@ -35,17 +33,16 @@ public class TitleManager : MonoBehaviour
 
     private int _seNum = 0;
 
-    // Start is called before the first frame update
+    
     void Start()
     {
-        //起動時に一度だけ
-        if(s_isWarmUpDone == true)
+        //起動時に一度だけウォームアップ
+        if (s_isWarmUpDone == true)
         {
             _warmUp.SetActive(false);
             _fade.gameObject.SetActive(false);
             _bgm.Play();
         }
-
         if (_warmUp != null && _warmUp.activeSelf == true)
         {
             _warmUp.SetActive(true);
@@ -63,6 +60,7 @@ public class TitleManager : MonoBehaviour
         _audioMixer.SetFloat("SEVol", volume);
     }
 
+    //SEの音量確認ボタン
     public void TrySEBtn()
     {
         if (_seNum == 0)
@@ -81,6 +79,7 @@ public class TitleManager : MonoBehaviour
         
     }
 
+    //設定ボタン(音量調整ボタン)
     public void OnClickOptionBtn()
     {
         if (_optionPanel.activeSelf == false)
@@ -122,6 +121,27 @@ public class TitleManager : MonoBehaviour
         yield return new WaitForSeconds(0.5f);
         SceneManager.LoadScene("Stage2");
     }
+    public void OnclickStg3Btn()
+    {
+        StartCoroutine("Onclickstg3BtnCor");
+    }
+    public IEnumerator Onclickstg3BtnCor()
+    {
+        _se.PlayOneShot(_decideSE);
+        yield return new WaitForSeconds(0.5f);
+        SceneManager.LoadScene("Stage3");
+    }
+    
+    public void OnclickStg4Btn()
+    {
+        StartCoroutine("Onclickstg4BtnCor");
+    }
+    public IEnumerator Onclickstg4BtnCor()
+    {
+        _se.PlayOneShot(_decideSE);
+        yield return new WaitForSeconds(0.5f);
+        SceneManager.LoadScene("Stage4");
+    }
 
     public void OnclickStg0Btn()
     {
@@ -134,6 +154,19 @@ public class TitleManager : MonoBehaviour
         SceneManager.LoadScene("Stage0");
     }
 
+    public void OnclickStgDamageConBtn()
+    {
+        StartCoroutine("OnclickstgDamageConBtnCor");
+    }
+
+    public IEnumerator OnclickstgDamageConBtnCor()
+    {
+        _se.PlayOneShot(_decideSE);
+        yield return new WaitForSeconds(0.5f);
+        SceneManager.LoadScene("StageDamageCon");
+    }
+
+    //初回起動時に行われるウォームアップ
     IEnumerator WarmUpSpell()
     {
         _warmUpSpell.text = "";

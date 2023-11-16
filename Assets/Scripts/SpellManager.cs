@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 public class SpellManager : MonoBehaviour
@@ -24,7 +25,7 @@ public class SpellManager : MonoBehaviour
     //カメラを揺らす演出
     [SerializeField] private CameraManager _cameraManager;
 
-    //魔法のエフェクトについて
+    //魔法のエフェクト(爆発)について
     [SerializeField] private GameObject _bombPrefab;
     [SerializeField] private Transform _effectsTrans;
 
@@ -37,6 +38,10 @@ public class SpellManager : MonoBehaviour
     //実装検討機能　二重詠唱
     private bool _isDualcaster = false;
 
+    //ダメージコンテストでは詠唱制限を無くす
+    private bool _isCap = true;
+    public static bool s_isRestriction = false;
+
     void Start()
     {
         //スペル初期化
@@ -45,6 +50,10 @@ public class SpellManager : MonoBehaviour
         s_spellLength = 0;
         s_spellDamage = 0;
         s_effectSize = 0;
+        if (SceneManager.GetActiveScene().name == "StageDamageCon")
+        {
+            _isCap = false;
+        }
     }
 
     
@@ -56,7 +65,7 @@ public class SpellManager : MonoBehaviour
         //エンターで魔法発動 それ以外では詠唱
         if (Input.GetKeyDown(KeyCode.Return))
         {
-            //スペルの長さが0の時と魔法を打った直後は魔法は発動しない
+            //スペルの長さが0の時と魔法を打った直後は魔法は発動しない(それとダメージコンテスト中の詠唱時間には発動しない)
             if (s_spellLength != 0 && _isSpellOver == false)
             {
                 _spell.text = "";//詠唱リセット
@@ -64,7 +73,8 @@ public class SpellManager : MonoBehaviour
                 bomb.transform.SetParent(_effectsTrans); //エフェクトはEffectsの子オブジェクトにする
                 
                 bomb.transform.localScale = new Vector3(s_effectSize, s_effectSize, 0);//詠唱の長さによってエフェクトのサイズ変更
-                _magicCircleTrans.transform.localScale = new Vector3(0, 0, 0);
+                _magicCircleTrans.transform.localScale = new Vector3(1, 1, 0);
+                _magicCircleImage.sprite = _magicCircleSprites[0];
                 _isSpellOver = true;
                 _cameraManager.Shake(); //カメラを揺らす演出
                 s_effectSize = 0;
@@ -83,7 +93,7 @@ public class SpellManager : MonoBehaviour
             }
 
             s_effectSize = s_spellLength * _spellSizeRate + 1; 
-            if(s_spellLength < 60)
+            if(s_spellLength < 60 || _isCap == false && s_isRestriction == false)
             {
                 int count = 1;
                 if(_isDualcaster == true)

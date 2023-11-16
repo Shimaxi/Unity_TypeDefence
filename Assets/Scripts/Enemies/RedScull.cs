@@ -1,9 +1,8 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEditor;
 
-public class RedSlime : EnemyManager
+public class RedScull : Enemy
 {
 
 }
